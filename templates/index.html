@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+        <!-- Bootstrap CSS -->
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/css/bootstrap.min.css"
+        integrity="sha384-B0vP5xmATw1+K9KRQjQERJvTumQW0nPEzvF6L/Z6nronJ3oUOFUFpCjEUQouq2+l" crossorigin="anonymous">
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery and Bootstrap Bundle (includes Popper) -->
+    <script src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.0/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-Piv4xVNRyMGpqkS2by6br4gNJ7DXjqk09RmUpJ8jgGtD7zP9yug3goQfGII0yAns"
+        crossorigin="anonymous"></script>
+        <link rel="stylesheet" type="text/css" href="../static/style.css">
+
+        <script>
+            $(document).ready(function () {
+                $(".todos-box").html("");
+                showTodos();
+            });
+            // state를 사용해서 상태관리하기
+
+            function postTodo() {
+                // 1. 유저가 입력한 데이터를 #todo-input에서 가져오기
+                let todo = $("#todo-input").val();
+                
+                // console.log(edit);
+
+                // 2. memo에 POST 방식으로 메모 생성 요청하기
+                $.ajax({
+                    type: "POST", // POST 방식으로 요청하겠다.
+                    url: "/todo/create", // /todo라는 url에 요청하겠다.
+                    data: { todo_give: todo }, // 데이터를 주는 방법
+                    success: function(response){ // 성공하면
+                    if (response["result"] == "success") {
+                        alert("입력 성공!");
+                                // 3. 성공 시 페이지 새로고침하기
+                        window.location.reload();
+                    } else {
+                        alert("서버 오류!")
+                    }
+                    }
+                })
+            }
+
+            function showTodos() {
+                $.ajax({
+                    type: "GET",
+                    url: "/todo/read",
+                    data: {},
+                    success: function(response){
+                        let todos = response["todos"];
+                        // console.log(todos);
+                        for (let i = 0; i < todos.length; i++) {
+                            makeCard(todos[i]["todoText"], todos[i]["title"], todos[i]["desc"], todos[i]["image"], todos[i]["url"], todos[i]["done"], todos[i]["_id"]);
+                        }
+                    }
+                })
+            }
+
+            function makeCard(todoText, title, desc, image, url, done, id) {
+                let temp_html = `<li>
+                <span class="todo-el">
+                    <span class="todo-text"> ${done ? `<s>${todoText}</s>` : todoText }</span>
+                    <div class="btns">
+                        <button onclick="successTodo('${id}')" type="button" class="btn btn-success">${done ? `복원`: `완료`}</button>
+                        <button type="button" class="btn btn-primary editBtn" data-toggle="modal" data-target="#exampleModal" data-whatever="@${todoText}">수정</button>
+                        <button onclick="deleteTodo('${id}')" type="button" class="btn btn-danger">삭제</button>
+                    </div>
+                </span>
+                
+                <div class="card mb-3" style=" cursor: pointer;" onclick= "location.href='${url}';">
+                    <div class="row no-gutters">
+                      <div class="col-md-4">
+                        <img src="${image}"  width="80%" height="120px" >
+                      </div>
+                      <div class="col-md-8">
+                        <div class="card-body">
+                          <h5 class="card-title">${title}</h5>
+                          <p class="card-text">${desc}</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+            </li>
+            <div class="modal fade" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="exampleModalLabel">수정하기</h5>
+              <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+              </button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group" id="${id}">
+                  <label for="edit-input" class="col-form-label">수정할 할 일을 입력해주세요</label>
+                  <input type="text" class="form-control" id="edit-input">
+                </div>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-dismiss="modal">닫기</button>
+              <button type="button" onclick="editTodo('${id}')" class="btn btn-primary">수정</button>
+            </div>
+          </div>
+        </div>
+      </div>`;
+                $(".todos-box").append(temp_html);
+            }
+            
+            // let editText = "";
+            // document.querySelector(".btns .editBtn").addEventListener("click", function () {
+            //     console.log("ddd")
+            //     document.querySelector('.modal-footer')
+            // });
+            
+
+            function deleteTodo(id){
+                $.ajax({
+                    type: "POST",
+                    url: "/todo/delete",
+                    data: { 'id_give':id },
+                    success: function (response) {
+                        if (response['result'] == 'success') {
+                            // 2. '삭제 완료! 안녕!' 얼럿을 띄웁니다.
+                            alert('삭제 완료!')
+                            // 3. 변경된 정보를 반영하기 위해 새로고침합니다.
+                            window.location.reload()
+                        }
+                    }
+                });
+            }
+
+            function successTodo(id){
+                
+                $.ajax({
+                    type: "POST",
+                    url: "/todo/success",
+                    data: { 'id_give':id },
+                    success: function (response) {
+                        if (response['result'] == 'success') {
+                            
+                            alert('처리 완료!')
+                            
+                            window.location.reload()
+                        }
+                    }
+                });
+            }
+
+            function editTodo(id){
+                
+                let edit = $(`#${id} #edit-input`).val();
+                
+                $.ajax({
+                    type: "POST",
+                    url: "/todo/edit",
+                    data: { 'id_give':id, 'edit_give':edit },
+                    success: function (response) {
+                        if (response['result'] == 'success') {
+                            alert('수정 완료!')
+                            window.location.reload()
+                        }else {
+                            alert("수정 오류!")
+                    }
+                    }
+                });
+            }
+        </script>
+
+    <title>Feeling Lucky Todo-List</title>
+</head>
+<body>
+    <div class="container">
+        <div class="jumbotron">
+            <h1 class="display-4">Feeling Lucky Todo-list</h1>
+            <p class="lead">이 서비스는 Todo List입니다. 근데 I'm Feeling Lucky를 곁들인</p>
+            <hr class="my-4">
+            <p>아래 해야할 일들을 입력해주세요. <br>입력하면 신기한 일이 벌어집니다!</p>
+            <!-- <button type="button" class="btn btn-primary btn-lg">일정 만들기</button> -->
+            <div class="form-group">
+                <label for="todo-input">오늘 할 일은?</label>
+                <div class="form-input_btn">
+                    <input type="text" class="form-control" id="todo-input" placeholder="오늘 할 일을 입력해주세요 (ex) 밥 먹기" style="width: 90%;">
+                    <button onclick="postTodo()" type="button" class="btn btn-dark">입력</button>
+                </div>
+            </div>
+        </div>
+        <ul class="todos-box">
+            <li>
+                <span class="todo-el">
+                    <span class="todo-text"> MacBook Pro 14인치 구매하기</span>
+                    <div class="btns">
+                        <button onclick="successTodo()" type="button" class="btn btn-success">완료</button>
+                        <!-- <button onclick="editTodo()" type="button" class="btn btn-primary">수정</button> -->
+                        <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">수정</button>
+                        <button onclick="deleteTodo()" type="button" class="btn btn-danger">삭제</button>
+                    </div>
+                </span>
+                
+                <div class="card mb-3" style=" cursor: pointer;" onclick= "location.href='https://www.google.co.kr/search?q=쇼미+11';">
+                    <div class="row no-gutters">
+                      <div class="col-md-4">
+                        <img src="https://www.notion.so/image/https%3A%2F%2Fs3-us-west-2.amazonaws.com%2Fsecure.notion-static.com%2F4aefd3f4-86ca-41b2-b896-7be616c5eb0e%2Fjungle_logo_removeBG.png?table=block&id=03596c42-cdd6-440d-ae8c-dae6f80eb287&spaceId=f7df479a-aad3-41fa-b656-31c7f8716758&width=250&userId=2201fdce-05a5-43db-b8be-ce64b248e71a&cache=v2" alt="jungle">
+                      </div>
+                      <div class="col-md-8">
+                        <div class="card-body">
+                          <h5 class="card-title">Card title</h5>
+                          <p class="card-text">This is a wider card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
+                          <p class="card-text"><small class="text-muted">Last updated 3 mins ago</small></p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+            </li>
+        </ul>
+    </div>
+</body>
+
+</html>
