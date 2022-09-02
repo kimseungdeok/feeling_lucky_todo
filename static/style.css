@@ -25,7 +25,8 @@ ul {
     flex-direction: row;
     justify-content: space-between;
     align-items: center;
-    padding: 10px;
+    padding: 0px;
+    padding-bottom: 10px;
 
 }
 .todo-text {
