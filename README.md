@@ -27,8 +27,6 @@ Google의 I'm feeling lucky와 todo를 합쳐 새로운 서비스를 만들어�
 - [x] Todo 삭제
 - [x] Todo 수정
 - [x] Todo 완료
-- [x] Todo 미완료
-
 ### 크롤링
 - [x] Todo 추가시 해당 Todo의 제목을 검색어로 하여 크롤링
 - [x] 메타태그의 description과 og:image를 크롤링하여 Todo의 내용과 이미지로 저장
@@ -37,7 +35,7 @@ Google의 I'm feeling lucky와 todo를 합쳐 새로운 서비스를 만들어�
 - [x] AWS EC2를 이용하여 배포
 
 ## 배운 점
-### 배운 점
+
 - Flask를 이용하여 서버를 구축하고 배포하는 방법
 - MongoDB를 이용하여 데이터를 저장하는 방법
 - 크롤링을 이용하여 웹페이지의 정보를 가져오는 방법
